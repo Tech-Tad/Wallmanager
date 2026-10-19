@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WallManager</title>
+  <!-- Le style est dans style.css, le comportement dans app.js -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <h1>WallManager</h1>
+
+    <!-- ===== Aperçu et actions rapides ===== -->
+    <section class="card" id="preview-card">
+      <div class="preview">
+        <img id="preview" alt="Fond d'écran actuel" hidden>
+        <p id="no-preview" class="muted">Aucun fond d'écran appliqué pour l'instant.</p>
+      </div>
+      <p id="status-line" class="muted"></p>
+      <div class="row">
+        <button id="btn-next" type="button">Image suivante</button>
+        <button id="btn-download" type="button" class="secondary">Télécharger maintenant</button>
+      </div>
+      <p id="warn-pil" class="warn" hidden>
+        Le module Python « PIL » est absent : le redressement EXIF et le filtre
+        de dimensions sont désactivés.
+      </p>
+    </section>
+
+    <!-- ===== Galerie ===== -->
+    <section class="card" id="gallery-card">
+      <h2>Galerie</h2>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" data-origin="downloaded" role="tab">Téléchargées</button>
+        <button type="button" class="tab" data-origin="local" role="tab">Locales</button>
+      </div>
+      <p id="gallery-help" class="muted"></p>
+      <div class="row">
+        <button id="g-all" type="button" class="secondary small">Tout sélectionner</button>
+        <button id="g-none" type="button" class="secondary small">Tout désélectionner</button>
+        <button id="g-delete" type="button" class="danger">Supprimer la sélection</button>
+        <button id="g-exclude" type="button" class="secondary small">Exclure de la rotation</button>
+        <button id="g-include" type="button" class="secondary small">Réintégrer</button>
+        <span id="g-count" class="muted" role="status"></span>
+      </div>
+      <div id="gallery" class="gallery"></div>
+      <p id="gallery-empty" class="muted" hidden>Aucune image.</p>
+      <button id="g-more" type="button" class="secondary small" hidden>Afficher plus</button>
+    </section>
+
+    <!-- ===== Changement automatique ===== -->
+    <section class="card">
+      <h2>Changement automatique</h2>
+      <div class="grid">
+        <label>Changer toutes les (minutes)
+          <input type="number" id="interval_minutes" min="1" max="10080">
+        </label>
+        <label>Mode
+          <select id="mode"></select>
+        </label>
+        <label id="theme-label">Thème (mode « Thème »)
+          <input type="text" id="theme" placeholder="ex. nature, ville...">
+        </label>
+      </div>
+      <p class="muted">Le thème d'une image locale est le nom de son sous-dossier ;
+        celui d'une image téléchargée est le thème de sa source.</p>
+      <label class="check"><input type="checkbox" id="autostart"> Lancer WallManager à l'ouverture de session</label>
+      <label class="check"><input type="checkbox" id="tray"> Afficher l'icône dans la zone de notification (état, démarrer, arrêter, réglages)</label>
+      <p id="autostart-note" class="muted" hidden>Le programme n'est pas installé : le démarrage utilisera le dossier actuel.
+        Lancez <code>./install.sh</code> pour une installation stable.</p>
+    </section>
+
+    <!-- ===== Images locales ===== -->
+    <section class="card">
+      <h2>Images locales</h2>
+      <label class="check"><input type="checkbox" id="use_local"> Utiliser les dossiers ci-dessous</label>
+      <div id="folders"></div>
+      <button id="btn-add-folder" type="button" class="secondary small">+ Ajouter un dossier</button>
+    </section>
+
+    <!-- ===== Téléchargements ===== -->
+    <section class="card">
+      <h2>Images téléchargées</h2>
+      <label class="check"><input type="checkbox" id="use_downloaded"> Utiliser les images téléchargées</label>
+      <label>Télécharger automatiquement toutes les (heures)
+        <input type="number" id="download_interval_hours" min="1" max="720">
+      </label>
+      <div id="sources"></div>
+      <div class="row">
+        <button id="btn-add-source" type="button" class="secondary small">+ Ajouter une adresse</button>
+        <select id="preset" class="preset" aria-label="Ajouter un site connu">
+          <option value="">+ Ajouter un site connu…</option>
+        </select>
+      </div>
+      <p class="muted">Type « Automatique » : l'adresse peut pointer vers une image, une page de miniatures,
+        un flux RSS ou un fichier JSON ; les images (et les liens vers leurs pages de détail) sont repérés automatiquement.
+        Unsplash, Pexels et Pixabay passent par leur API officielle : une clé gratuite est nécessaire.
+        « Max par jour » est la seule limite : nombre maximal d'images téléchargées chaque jour pour cette adresse. Les images s'accumulent donc jusqu'à ce que vous les supprimiez dans la galerie.</p>
+    </section>
+
+    <!-- ===== Filtres ===== -->
+    <section class="card">
+      <h2>Filtre de dimensions</h2>
+      <div class="grid">
+        <label>Largeur minimale (px)<input type="number" id="min_width" min="0"></label>
+        <label>Hauteur minimale (px)<input type="number" id="min_height" min="0"></label>
+        <label>Largeur maximale (0 = illimitée)<input type="number" id="max_width" min="0"></label>
+        <label>Hauteur maximale (0 = illimitée)<input type="number" id="max_height" min="0"></label>
+        <label>Largeur souhaitée (px, 0 = la plus grande)
+          <input type="number" id="prefer_width" min="0">
+        </label>
+        <label>Orientation
+          <select id="orientation">
+            <option value="landscape">Paysage</option>
+            <option value="portrait">Portrait</option>
+            <option value="any">Toutes</option>
+          </select>
+        </label>
+      </div>
+      <p class="muted">Les dimensions tiennent compte de l'orientation EXIF des photos.
+        « Largeur souhaitée » : quand un site propose plusieurs formats, on prend le plus grand qui ne la dépasse pas
+        (évite les fichiers 8K énormes).</p>
+      <label class="check"><input type="checkbox" id="safe_mode"> Mode sûr : écarter les images aux mots-clés explicites (API)</label>
+    </section>
+
+    <div class="row sticky">
+      <button id="btn-save" type="button">Enregistrer</button>
+      <span id="message" class="muted" role="status"></span>
+    </div>
+
+    <section class="card">
+      <h2>Journal</h2>
+      <pre id="log"></pre>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

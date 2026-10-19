@@ -1,0 +1,130 @@
+{
+  "interval_minutes": 15,
+  "mode": "random",
+  "theme": "",
+  "use_local": true,
+  "use_downloaded": true,
+  "sources": [
+    {
+      "name": "hdwallpapers.in",
+      "type": "hdwallpapers",
+      "url": "https://www.hdwallpapers.in/digital_universe-desktop-wallpapers.html",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "Espace",
+      "enabled": true
+    },
+    {
+      "name": "wallhalla",
+      "type": "auto",
+      "url": "https://wallhalla.com/random?",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "",
+      "enabled": true
+    },
+    {
+      "name": "Wallpaperaccess Space",
+      "type": "wallpaperaccess",
+      "url": "https://wallpaperaccess.com/cat/space",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "espace",
+      "enabled": true
+    },
+    {
+      "name": "wallpaperaccess Nature",
+      "type": "wallpaperaccess",
+      "url": "https://wallpaperaccess.com/cat/nature",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "nature",
+      "enabled": true
+    },
+    {
+      "name": "4kw Wallpapers SF",
+      "type": "4kwallpapers",
+      "url": "https://4kwallpapers.com/sci-fi/",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "SF",
+      "enabled": true
+    },
+    {
+      "name": "4k Wallpapers Space",
+      "type": "4kwallpapers",
+      "url": "https://4kwallpapers.com/space",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "espace",
+      "enabled": true
+    },
+    {
+      "name": "Sourcesplash",
+      "type": "auto",
+      "url": "https://www.sourcesplash.com",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "",
+      "enabled": true
+    },
+    {
+      "name": "https://wallpapers.com/",
+      "type": "auto",
+      "url": "https://wallpapers.com/",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "",
+      "enabled": true
+    },
+    {
+      "name": "Nasa Hubble",
+      "type": "auto",
+      "url": "https://science.nasa.gov/gallery/hubbles-universe/",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "",
+      "enabled": true
+    },
+    {
+      "name": "Nasa James Webb",
+      "type": "auto",
+      "url": "https://www.flickr.com/photos/nasawebbtelescope/",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "",
+      "enabled": true
+    },
+    {
+      "name": "Nasa IOTD",
+      "type": "auto",
+      "url": "https://www.nasa.gov/image-of-the-day/",
+      "api_key": "",
+      "query": "",
+      "max_per_day": 5,
+      "theme": "",
+      "enabled": true
+    }
+  ],
+  "download_interval_hours": 12,
+  "filters": {
+    "min_width": 1280,
+    "min_height": 720,
+    "max_width": 0,
+    "max_height": 0,
+    "orientation": "landscape"
+  },
+  "prefer_width": 5000,
+  "safe_mode": true,
+  "web_port": 8765
+}
