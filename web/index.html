@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WallManager</title>
-  <!-- Le style est dans style.css, le comportement dans app.js -->
+  <!-- Le style est dans style.css, le comportement dans app.js.
+       Chaque section repliable est un <details> : fermée par défaut, un clic sur son titre l'ouvre. -->
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -29,8 +30,8 @@
     </section>
 
     <!-- ===== Galerie ===== -->
-    <section class="card" id="gallery-card">
-      <h2>Galerie</h2>
+    <details class="card fold" id="gallery-card">
+      <summary>Galerie</summary>
       <div class="tabs" role="tablist">
         <button type="button" class="tab active" data-origin="downloaded" role="tab">Téléchargées</button>
         <button type="button" class="tab" data-origin="local" role="tab">Locales</button>
@@ -47,11 +48,11 @@
       <div id="gallery" class="gallery"></div>
       <p id="gallery-empty" class="muted" hidden>Aucune image.</p>
       <button id="g-more" type="button" class="secondary small" hidden>Afficher plus</button>
-    </section>
+    </details>
 
     <!-- ===== Changement automatique ===== -->
-    <section class="card">
-      <h2>Changement automatique</h2>
+    <details class="card fold">
+      <summary>Changement automatique</summary>
       <div class="grid">
         <label>Changer toutes les (minutes)
           <input type="number" id="interval_minutes" min="1" max="10080">
@@ -69,19 +70,19 @@
       <label class="check"><input type="checkbox" id="tray"> Afficher l'icône dans la zone de notification (état, démarrer, arrêter, réglages)</label>
       <p id="autostart-note" class="muted" hidden>Le programme n'est pas installé : le démarrage utilisera le dossier actuel.
         Lancez <code>./install.sh</code> pour une installation stable.</p>
-    </section>
+    </details>
 
     <!-- ===== Images locales ===== -->
-    <section class="card">
-      <h2>Images locales</h2>
+    <details class="card fold">
+      <summary>Images locales</summary>
       <label class="check"><input type="checkbox" id="use_local"> Utiliser les dossiers ci-dessous</label>
       <div id="folders"></div>
       <button id="btn-add-folder" type="button" class="secondary small">+ Ajouter un dossier</button>
-    </section>
+    </details>
 
     <!-- ===== Téléchargements ===== -->
-    <section class="card">
-      <h2>Images téléchargées</h2>
+    <details class="card fold">
+      <summary>Images téléchargées</summary>
       <label class="check"><input type="checkbox" id="use_downloaded"> Utiliser les images téléchargées</label>
       <label>Télécharger automatiquement toutes les (heures)
         <input type="number" id="download_interval_hours" min="1" max="720">
@@ -97,11 +98,11 @@
         un flux RSS ou un fichier JSON ; les images (et les liens vers leurs pages de détail) sont repérés automatiquement.
         Unsplash, Pexels et Pixabay passent par leur API officielle : une clé gratuite est nécessaire.
         « Max par jour » est la seule limite : nombre maximal d'images téléchargées chaque jour pour cette adresse. Les images s'accumulent donc jusqu'à ce que vous les supprimiez dans la galerie.</p>
-    </section>
+    </details>
 
     <!-- ===== Filtres ===== -->
-    <section class="card">
-      <h2>Filtre de dimensions</h2>
+    <details class="card fold">
+      <summary>Filtre de dimensions</summary>
       <div class="grid">
         <label>Largeur minimale (px)<input type="number" id="min_width" min="0"></label>
         <label>Hauteur minimale (px)<input type="number" id="min_height" min="0"></label>
@@ -122,17 +123,17 @@
         « Largeur souhaitée » : quand un site propose plusieurs formats, on prend le plus grand qui ne la dépasse pas
         (évite les fichiers 8K énormes).</p>
       <label class="check"><input type="checkbox" id="safe_mode"> Mode sûr : écarter les images aux mots-clés explicites (API)</label>
-    </section>
+    </details>
 
     <div class="row sticky">
       <button id="btn-save" type="button">Enregistrer</button>
       <span id="message" class="muted" role="status"></span>
     </div>
 
-    <section class="card">
-      <h2>Journal</h2>
+    <details class="card fold">
+      <summary>Journal</summary>
       <pre id="log"></pre>
-    </section>
+    </details>
   </main>
   <script src="/app.js"></script>
 </body>

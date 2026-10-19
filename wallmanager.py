@@ -74,7 +74,7 @@ except ImportError:  # pragma: no cover
 # ---------------------------------------------------------------------------
 # 1. CHEMINS ET CONSTANTES
 # ---------------------------------------------------------------------------
-VERSION = "1.1.0"
+VERSION = "1.1.5"
 APP = "wallmanager"
 HOME = Path.home()
 
