@@ -74,7 +74,7 @@ except ImportError:  # pragma: no cover
 # ---------------------------------------------------------------------------
 # 1. CHEMINS ET CONSTANTES
 # ---------------------------------------------------------------------------
-VERSION = "1.1.5"
+VERSION = "1.1.6"
 APP = "wallmanager"
 HOME = Path.home()
 
@@ -87,6 +87,7 @@ STATE_FILE = DATA_DIR / "state.json"          # mémoire du programme
 LOG_FILE = DATA_DIR / "wallmanager.log"       # journal
 LOCK_FILE = DATA_DIR / "wallmanager.lock"     # empêche de lancer 2 fois
 TRAY_LOCK_FILE = DATA_DIR / "wallmanager-tray.lock"   # idem pour l'icône de notification
+TRAY_LOG_FILE = DATA_DIR / "tray.log"         # erreurs de l'icône de notification (si elle plante)
 DOWNLOAD_DIR = DATA_DIR / "downloads"         # un sous-dossier par source
 ROTATED_DIR = DATA_DIR / "rotated"            # copies redressées (EXIF)
 THUMB_DIR = DATA_DIR / "thumbs"               # miniatures de la galerie
@@ -1837,6 +1838,7 @@ def cmd_run(args):
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)   # un seul exemplaire à la fois
     except OSError:
         print("WallManager tourne déjà.")
+        start_tray_background()          # l'icône peut manquer (programme lancé avant sa mise à jour)
         if args.open:
             open_browser(load_config()["web_port"])
         return
@@ -1898,6 +1900,7 @@ def cmd_status(_args):
     print(f"Programme : {'en cours (processus ' + str(pid) + ')' if pid else 'arrêté'} ; "
           f"démarrage automatique : {'oui' if autostart_enabled() else 'non'} ; "
           f"installé : {'oui (paquet)' if is_packaged() else 'oui' if (APP_DIR / 'wallmanager.py').is_file() else 'non'}")
+    print("\n".join(tray_diagnosis()))
 
 
 def cmd_diagnose(args):
@@ -2001,6 +2004,7 @@ AUTOSTART_FILE = CONFIG_HOME / "autostart" / "wallmanager.desktop"
 MENU_FILE = DATA_DIR.parent / "applications" / "wallmanager.desktop"
 BIN_FILE = HOME / ".local" / "bin" / "wallmanager"
 APP_DIR = DATA_DIR / "app"
+USER_ICON_DIR = DATA_DIR.parent / "icons" / "hicolor" / "scalable" / "apps"
 
 
 def installed_script():
@@ -2129,6 +2133,9 @@ def cmd_install(args):
         shutil.copytree(src_dir / "web", APP_DIR / "web", dirs_exist_ok=True)
         if (src_dir / "icons").is_dir():
             shutil.copytree(src_dir / "icons", APP_DIR / "icons", dirs_exist_ok=True)
+            USER_ICON_DIR.mkdir(parents=True, exist_ok=True)         # thème d'icônes personnel
+            for svg in (src_dir / "icons").glob("*.svg"):
+                shutil.copy2(svg, USER_ICON_DIR / svg.name)
         for name in ("wallmanager.py", "wallmanager.sh", "install.sh"):
             if (APP_DIR / name).is_file():
                 (APP_DIR / name).chmod(0o755)
@@ -2179,7 +2186,7 @@ def cmd_install(args):
 def remove_user_install():
     """Retire une ancienne installation « utilisateur » (~/.local). Retourne ce qui a été retiré."""
     removed = []
-    for f in (MENU_FILE, BIN_FILE):
+    for f in (MENU_FILE, BIN_FILE, USER_ICON_DIR / "wallmanager.svg", USER_ICON_DIR / "wallmanager-off.svg"):
         if f.is_file():
             f.unlink()
             removed.append(str(f))
@@ -2301,8 +2308,13 @@ def start_tray_background():
         return None
     cmd = [sys.executable, str(installed_script())] + (["--dry-run"] if DRY_RUN else []) + ["tray", "--background"]
     try:
-        subprocess.Popen(cmd, start_new_session=True, stdin=subprocess.DEVNULL,
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        if TRAY_LOG_FILE.exists() and TRAY_LOG_FILE.stat().st_size > 100_000:
+            TRAY_LOG_FILE.write_text("", encoding="utf-8")
+        with TRAY_LOG_FILE.open("a", encoding="utf-8") as errors:       # messages d'erreur éventuels de GTK
+            subprocess.Popen(cmd, start_new_session=True, stdin=subprocess.DEVNULL,
+                             stdout=subprocess.DEVNULL, stderr=errors)
+        log("Icône de notification : lancement demandé.")
     except OSError as exc:
         log(f"Icône de notification non lancée : {exc}")
 
@@ -2540,6 +2552,8 @@ class TrayApp:
         self.menu.show_all()
         self.icon = self._make_icon()
         self.refresh()
+        if self.kind == "xapp":
+            self.icon.set_visible(True)
         self.GLib.timeout_add_seconds(5, self._tick)
 
     # --- construction ---
@@ -2558,8 +2572,7 @@ class TrayApp:
             icon.set_name("wallmanager")
             icon.set_primary_menu(self.menu)       # clic gauche
             icon.set_secondary_menu(self.menu)     # clic droit
-            icon.set_visible(True)
-            return icon
+            return icon                            # rendue visible à la fin de __init__ (icône déjà réglée)
         if self.kind == "indicator":
             icon = mod.Indicator.new_with_path("wallmanager", "wallmanager",
                                                mod.IndicatorCategory.APPLICATION_STATUS, str(ICON_DIR))
@@ -2580,8 +2593,13 @@ class TrayApp:
             self.icon.set_icon_full(name, tooltip)
             self.icon.set_title(tooltip)
             return
+        # Le nom d'icône du thème (installé par le paquet) est ce que les barres des bureaux
+        # gèrent le mieux ; à défaut, on donne le chemin du fichier.
+        in_theme = self.Gtk.IconTheme.get_default().has_icon(name)
         if self.kind == "xapp":
-            self.icon.set_icon_name(str(path) if path.is_file() else name)
+            self.icon.set_icon_name(name if in_theme or not path.is_file() else str(path))
+        elif in_theme:
+            self.icon.set_from_icon_name(name)
         elif path.is_file():
             self.icon.set_from_file(str(path))
         else:
@@ -2645,7 +2663,14 @@ def cmd_tray(args):
         print(reason + "\nÀ la place, voici le menu en fenêtres Zenity.")
         return cmd_menu(args)
 
-    app = TrayApp(backend, args.background)
+    try:
+        app = TrayApp(backend, args.background)
+    except Exception:                       # on garde la trace de l'erreur pour le diagnostic
+        import traceback
+        log("Icône de notification : démarrage impossible :\n" + traceback.format_exc())
+        if not args.background:
+            raise
+        return
     GLib = backend[1]
     for sig in (signal.SIGINT, signal.SIGTERM):                   # fermeture propre (kill, fin de session)
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, sig, app.quit)
@@ -2653,6 +2678,37 @@ def cmd_tray(args):
         f"{' / ' + backend[2].__name__.split('.')[-1] if backend[2] else ''}).")
     backend[0].main()
     log("Icône de notification fermée.")
+
+
+def tray_diagnosis():
+    """Lignes de diagnostic sur l'icône (commande « status »)."""
+    lines = []
+    pid = tray_pid()
+    lines.append("Icône de notification : " + (f"lancée (processus {pid})" if pid else "absente")
+                 + ("" if load_config()["tray"] else " — désactivée dans les réglages"))
+    lines.append(f"  Écran : DISPLAY={os.environ.get('DISPLAY', '(vide)')} ; "
+                 f"WAYLAND_DISPLAY={os.environ.get('WAYLAND_DISPLAY', '(vide)')}")
+    try:
+        import gi
+        found = []
+        for ns, ver in (("Gtk", "3.0"), ("XApp", "1.0"), ("AyatanaAppIndicator3", "0.1"), ("AppIndicator3", "0.1")):
+            try:
+                gi.require_version(ns, ver)
+                found.append(ns)
+            except ValueError:
+                pass
+        lines.append("  Composants GTK trouvés : " + (", ".join(found) or "aucun"))
+    except ImportError:
+        lines.append("  Python « gi » absent : sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-xapp-1.0")
+    lines.append("  Zenity : " + ("oui" if shutil.which("zenity") else "NON (sudo apt install zenity)"))
+    try:
+        errors = [x for x in TRAY_LOG_FILE.read_text(encoding="utf-8").splitlines() if x.strip() and "AT-SPI" not in x][-6:]
+    except OSError:
+        errors = []
+    if errors:
+        lines.append(f"  Dernières erreurs ({TRAY_LOG_FILE}) :")
+        lines += ["    " + x for x in errors]
+    return lines
 
 
 def cmd_menu(_args):

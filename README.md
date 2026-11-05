@@ -1,170 +1,172 @@
 # WallManager
 
-Wallpaper manager for Linux Mint (Cinnamon, MATE, GNOME), on X11 and Wayland.
+Gestionnaire de fond d'écran pour Linux Mint (Cinnamon, MATE, GNOME), sous X11 comme sous Wayland.
 
-*Français : voir [README.md](README.md). Note: the settings page and the tray menu are in French; their labels are quoted below in French with an English gloss where useful.*
+*English: see [README.en.md](README.en.md).*
 
-## Installation and automatic start
+## Installation et démarrage automatique
 
 ```bash
 tar xzf wallmanager.tar.gz && cd wallmanager
-./install.sh                # installs, enables autostart and starts the program
+./install.sh                # installe, active le démarrage automatique et lance le programme
 ```
 
-Everything happens in your home folder, **without administrator rights**:
+Tout se passe dans votre dossier personnel, **sans droits administrateur** :
 
-| Item | Location |
+| Élément | Emplacement |
 |---|---|
-| Program (stable copy) | `~/.local/share/wallmanager/app/` — you can then delete the original folder |
-| `wallmanager` command | `~/.local/bin/wallmanager` |
-| Applications menu entry | "WallManager" (opens the settings page) |
-| Start at login | `~/.config/autostart/wallmanager.desktop` (Cinnamon, MATE and GNOME, X11 or Wayland) |
+| Programme (copie stable) | `~/.local/share/wallmanager/app/` — vous pouvez ensuite supprimer le dossier d'origine |
+| Commande `wallmanager` | `~/.local/bin/wallmanager` |
+| Entrée du menu des applications | « WallManager » (ouvre la page de réglages) |
+| Démarrage à l'ouverture de session | `~/.config/autostart/wallmanager.desktop` (Cinnamon, MATE et GNOME, X11 ou Wayland) |
 
-Options: `./install.sh --no-autostart` (no automatic start), `./install.sh --no-start` (do not start right away). Running `./install.sh` again after receiving a new version updates it and restarts the program.
+Options : `./install.sh --no-autostart` (sans démarrage automatique), `./install.sh --no-start` (sans lancement immédiat). Relancer `./install.sh` après avoir reçu une nouvelle version la met à jour et redémarre le programme.
 
-Autostart can also be turned on or off from the settings page (checkbox "Lancer WallManager à l'ouverture de session" — start WallManager at login).
+Le démarrage automatique peut aussi être activé ou coupé depuis la page de réglages (case « Lancer WallManager à l'ouverture de session »).
 
 ```bash
-wallmanager status       # running? autostart? current image
-wallmanager stop         # stops the program
-./install.sh --uninstall           # uninstalls; settings and images are kept
-./install.sh --uninstall --purge   # uninstalls and also deletes settings, images and log
+wallmanager status       # en cours ? démarrage automatique ? image actuelle
+wallmanager stop         # arrête le programme
+./install.sh --uninstall           # désinstalle ; réglages et images conservés
+./install.sh --uninstall --purge   # désinstalle et efface aussi réglages, images et journal
 ```
 
-The settings page is served on your machine only: <http://127.0.0.1:8765>.
+La page de réglages est servie uniquement sur votre machine : <http://127.0.0.1:8765>.
 
-Without installing: `./wallmanager.sh` runs the program from this folder and opens the settings page.
+Sans installer : `./wallmanager.sh` lance le programme depuis ce dossier et ouvre la page de réglages.
 
-## Debian package (.deb)
+## Paquet Debian (.deb)
 
-To install WallManager like any other system software (Linux Mint, Ubuntu, Debian):
+Pour installer WallManager comme n'importe quel logiciel du système (Linux Mint, Ubuntu, Debian) :
 
 ```bash
-sudo apt install ./wallmanager_1.1.0_all.deb     # the "./" is required for a local file
+sudo apt install ./wallmanager_1.1.6_all.deb     # le « ./ » est nécessaire pour un fichier local
 ```
 
-`apt` adds the missing dependencies itself (`python3`, `libglib2.0-bin` for `gsettings`) and, as recommendations, `python3-pil` (EXIF and dimensions) and `xdg-utils`.
+`apt` ajoute lui-même les dépendances manquantes (`python3`, `libglib2.0-bin` pour `gsettings`) et, par recommandation, `python3-pil` (EXIF et dimensions) et `xdg-utils`.
 
-| Item | Location |
+| Élément | Emplacement |
 |---|---|
-| Program | `/usr/lib/wallmanager/` |
-| Command | `/usr/bin/wallmanager` |
-| Applications menu | "WallManager" (opens the settings page) |
-| Automatic start | `/etc/xdg/autostart/wallmanager.desktop`: at login of **every** user; each user can turn it off with the checkbox on the settings page |
+| Programme | `/usr/lib/wallmanager/` |
+| Commande | `/usr/bin/wallmanager` |
+| Menu des applications | « WallManager » (ouvre la page de réglages) |
+| Démarrage automatique | `/etc/xdg/autostart/wallmanager.desktop` : à l'ouverture de session de **chaque** utilisateur ; chacun peut le couper avec la case de la page de réglages |
 
-After installing: start "WallManager" from the menu (or run the `wallmanager` command); from then on it starts by itself at every login.
+Après l'installation : lancez « WallManager » depuis le menu (ou la commande `wallmanager`) ; il démarrera ensuite tout seul à chaque ouverture de session.
 
-- **Upgrade**: `sudo apt install ./wallmanager_<version>_all.deb`. The old program is stopped; start it again (menu) or log in again.
-- **If you previously used `install.sh`**: run `wallmanager install` once; the old personal installation (`~/.local`) is removed to avoid a duplicate.
-- **Removal**: `sudo apt remove wallmanager`. Your settings and images (`~/.config/wallmanager`, `~/.local/share/wallmanager`) are never touched; `wallmanager uninstall --purge` deletes them if you want.
-- **Rebuilding the package**: `./packaging/build-deb.sh` (only `dpkg-deb` is needed) → `dist/wallmanager_<version>_all.deb`. The version comes from `VERSION` in `wallmanager.py`.
+- **Mise à jour** : `sudo apt install ./wallmanager_<version>_all.deb`. L'ancien programme est arrêté ; relancez-le (menu) ou rouvrez la session.
+- **Si vous aviez utilisé `install.sh`** : lancez `wallmanager install` une fois ; l'ancienne installation personnelle (`~/.local`) est retirée pour éviter un doublon.
+- **Retrait** : `sudo apt remove wallmanager`. Vos réglages et images (`~/.config/wallmanager`, `~/.local/share/wallmanager`) ne sont jamais touchés ; `wallmanager uninstall --purge` les efface si vous le souhaitez.
+- **Reconstruire le paquet** : `./packaging/build-deb.sh` (seul `dpkg-deb` est nécessaire) → `dist/wallmanager_<version>_all.deb`. La version vient de `VERSION` dans `wallmanager.py`.
 
-The package's "Maintainer" field and licence are neutral placeholders (`packaging/build-deb.sh`): adapt them before any public distribution.
+Le champ « Maintainer » et la licence du paquet sont des valeurs neutres (`packaging/build-deb.sh`) : à adapter avant une diffusion publique.
 
-## Notification-area icon (tray)
+## Icône dans la zone de notification
 
-When it starts, WallManager shows a small icon near the clock (blue screen = running, grey screen with an orange badge = stopped). Click the icon to open the menu:
+Au lancement, WallManager affiche une petite icône près de l'horloge (écran bleu = en marche, écran gris avec un badge orange = arrêté). Clic sur l'icône pour ouvrir le menu :
 
-- **Status**: running or stopped, current image, time until the next change (also in the tooltip);
-- **Image suivante** (next image) and **Télécharger maintenant** (download now);
-- **Ouvrir la configuration** (open settings): opens the settings page (and starts the program if it was stopped);
-- **Afficher l'état…** and **Afficher le journal…** (show status / show log): Zenity windows;
-- **Démarrer / Arrêter WallManager** (start / stop);
-- **Quitter l'icône** (quit the icon): closes the icon only; the program keeps running.
+- **État** : en marche ou arrêté, image actuelle, temps avant le prochain changement (aussi dans l'infobulle) ;
+- **Image suivante** et **Télécharger maintenant** ;
+- **Ouvrir la configuration** : ouvre la page de réglages (et démarre le programme s'il était arrêté) ;
+- **Afficher l'état…** et **Afficher le journal…** : fenêtres Zenity ;
+- **Démarrer / Arrêter WallManager** ;
+- **Quitter l'icône** : ferme seulement l'icône ; le programme continue.
 
-The icon is a separate small process: it stays visible when the program is stopped, so you can start it again. It is launched by the program (hence at session start); the checkbox "Afficher l'icône dans la zone de notification" in the settings turns it off. To launch it by hand: `wallmanager tray`.
+L'icône est un petit processus à part : elle reste affichée quand le programme est arrêté, pour pouvoir le relancer. Elle est lancée par le programme (donc au démarrage de session) ; la case « Afficher l'icône dans la zone de notification » des réglages la coupe. Pour la lancer à la main : `wallmanager tray`.
 
-Component used, in order: `XApp.StatusIcon` (Linux Mint), then `AppIndicator` (GNOME with the "AppIndicator and KStatusNotifierItem Support" extension, KDE), then `Gtk.StatusIcon` (X11 only). On Linux Mint everything is already installed (`python3-gi`, `gir1.2-xapp-1.0`, `zenity`). Without a notification area, `wallmanager menu` offers the same actions in Zenity windows (you can bind it to a keyboard shortcut, for example).
+Composant utilisé, dans l'ordre : `XApp.StatusIcon` (Linux Mint), puis `AppIndicator` (GNOME avec l'extension « AppIndicator and KStatusNotifierItem Support », KDE), puis `Gtk.StatusIcon` (X11 seulement). Sous Linux Mint, tout est déjà installé (`python3-gi`, `gir1.2-xapp-1.0`, `zenity`). Sans zone de notification, `wallmanager menu` offre les mêmes actions en fenêtres Zenity (à lier à un raccourci clavier par exemple).
 
-## What the program does
+**Si l'icône n'apparaît pas** : lancez `wallmanager status` (ligne « Icône de notification », composants GTK trouvés, dernières erreurs) puis `wallmanager tray` dans un terminal : les messages s'y affichent. Vérifiez aussi que la zone de notification est présente dans votre tableau de bord (Cinnamon : applet « Zone de notification » / « XApp Status » ; GNOME : extension AppIndicator). Sur Linux Mint : `sudo apt install python3-gi gir1.2-gtk-3.0 gir1.2-xapp-1.0 zenity`.
 
-| Need | Setting |
+## Ce que fait le programme
+
+| Besoin | Réglage |
 |---|---|
-| Automatic orientation (EXIF) | Automatic. A rotated copy is created; your originals are never modified. |
-| Local images | "Images locales": one or more folders (subfolders included). |
-| Downloaded images | "Images téléchargées": one address per line, stored in `~/.local/share/wallmanager/downloads/`. |
-| Configurable addresses | Direct image, **thumbnail page**, web page, RSS feed or JSON. On a thumbnail page the program follows the links (up to three levels: detail page → format page → image): a link to an image → it takes it at full size; a link to a detail page → it reads it and looks for the image (`og:image`, image link, `srcset`…). The thumbnails themselves are not downloaded. |
-| Daily maximum | "Max par jour" field of each address (10 by default): this is the only limit, there is no global cap per site. Once reached, downloads resume the next day. |
-| No duplicates | Automatic: an image already received (same content, even from another address or source) is never added twice. An image you deleted by hand is not downloaded again. |
-| Gallery | "Galerie" section of the settings page. **Téléchargées** (downloaded) tab: tick images then "Supprimer la sélection" (deleted from disk, and not downloaded again). **Locales** (local) tab: your photos are never deleted from here; you can only "Exclure de la rotation" (exclude from rotation) and bring them back. Each image has a "Définir en fond" (set as wallpaper) button. Clicking a thumbnail opens it full size. |
-| Dimension filter | Min and max width/height, orientation. Applies to local **and** downloaded images. |
-| Interval | "Changer toutes les (minutes)" (change every N minutes). |
-| Mode | Newest, oldest, random, alphabetical order, theme. |
+| Orientation automatique (EXIF) | Automatique. Une copie redressée est créée ; vos originaux ne sont jamais modifiés. |
+| Images locales | « Images locales » : un ou plusieurs dossiers (sous-dossiers inclus). |
+| Images téléchargées | « Images téléchargées » : une adresse par ligne, stockées dans `~/.local/share/wallmanager/downloads/`. |
+| Adresses configurables | Image directe, **page de miniatures**, page web, flux RSS ou JSON. Sur une page de miniatures, le programme suit les liens (jusqu'à trois niveaux : page de détail → page d'un format → image) : lien vers une image → il la prend en grand ; lien vers une page de détail → il la lit et y cherche l'image (image annoncée `og:image`, lien image, `srcset`…). Les miniatures elles-mêmes ne sont pas téléchargées. |
+| Maximum par jour | Champ « Max par jour » de chaque adresse (10 par défaut) : c'est la seule limite, il n'y a pas de plafond global par site. Au-delà, les téléchargements reprennent le lendemain. |
+| Pas de doublons | Automatique : une image déjà reçue (même contenu, même venue d'une autre adresse ou source) n'est jamais ajoutée deux fois. Une image supprimée à la main n'est pas retéléchargée. |
+| Galerie | Section « Galerie » de la page de réglages. Onglet **Téléchargées** : cochez des images puis « Supprimer la sélection » (effacées du disque, et non retéléchargées ensuite). Onglet **Locales** : vos photos ne sont jamais supprimées d'ici ; on peut seulement les « Exclure de la rotation » (et les réintégrer). Chaque image a un bouton « Définir en fond ». Un clic sur la miniature l'ouvre en grand. |
+| Filtre de dimensions | Largeur/hauteur min et max, orientation. S'applique aux images locales **et** téléchargées. |
+| Intervalle | « Changer toutes les (minutes) ». |
+| Mode | Plus récent, plus ancien, aléatoire, ordre alphabétique, thème. |
 
-**Theme**: for a local image, it is the name of its first subfolder (`Pictures/nature/a.jpg` → "nature"); for a downloaded image, it is the theme set on its source.
+**Thème** : pour une image locale, c'est le nom de son premier sous-dossier (`Pictures/nature/a.jpg` → « nature ») ; pour une image téléchargée, c'est le thème indiqué sur sa source.
 
-**Newest / oldest**: based on the file date (for downloads, the download date). An image already shown is not repeated while others remain.
+**Plus récent / plus ancien** : selon la date du fichier (pour les téléchargements, la date de téléchargement). Une image déjà affichée n'est pas répétée tant qu'il en reste d'autres.
 
-## Known sites (providers)
+## Sites connus (fournisseurs)
 
-In "Images téléchargées", the **"+ Ajouter un site connu…"** menu (add a known site) creates a ready-made source. Each source has a **type**; the idea comes from Variety (one module per site that prepares a list of images, then a slow, limited download), rewritten here without reusing its code or its API key.
+Dans « Images téléchargées », le menu **« + Ajouter un site connu… »** crée une source déjà réglée. Chaque source a un **type** ; l'idée vient de Variety (un module par site qui prépare une liste d'images, puis un téléchargement lent et limité), réécrite ici sans reprendre son code ni sa clé d'API.
 
-| Site | Method | Good to know |
+| Site | Méthode | À savoir |
 |---|---|---|
-| Unsplash | Official API | Free key ("Access Key", unsplash.com/developers). 30 random photos per request, optional search. "Plus" (paid) photos are skipped and Unsplash is notified of every download, as its rules require. |
-| Pexels | Official API | Free key (pexels.com/api). Without a search: editors' picks. |
-| Pixabay | Official API | Free key (pixabay.com/api/docs). Images usually 1280 px wide. |
-| HDWallpapers.in, 4K Wallpapers, WallpaperFlare | Page reading | Thumbnail page → detail page → best format ≤ "preferred width". Only the site's own pages are followed. |
-| WallpaperAccess | Page reading | Thumbnails `/thumb/N.jpg` → image `/full/N.jpg`. A collection page or the home page. |
+| Unsplash | API officielle | Clé gratuite (« Access Key », unsplash.com/developers). 30 photos aléatoires par requête, recherche facultative. Les photos « plus » (payantes) sont écartées et Unsplash est prévenu de chaque téléchargement, comme l'exigent ses règles. |
+| Pexels | API officielle | Clé gratuite (pexels.com/api). Sans recherche : sélection de la rédaction. |
+| Pixabay | API officielle | Clé gratuite (pixabay.com/api/docs). Images de 1280 px de large en général. |
+| HDWallpapers.in, 4K Wallpapers, WallpaperFlare | Lecture de page | Page de miniatures → page de détail → meilleur format ≤ « largeur souhaitée ». Seules les pages du site sont suivies. |
+| WallpaperAccess | Lecture de page | Miniatures `/thumb/N.jpg` → image `/full/N.jpg`. Une page de collection ou la page d'accueil. |
 
-Keys are stored in `~/.config/wallmanager/config.json` (readable by you only) and are used only to query the API of the site concerned.
+Les clés sont enregistrées dans `~/.config/wallmanager/config.json` (lisible par vous seul) et ne servent qu'à interroger l'API du site concerné.
 
-**Precise address (API sites)**: for Unsplash, Pexels and Pixabay, the "Adresse précise (facultatif)" (precise address, optional) field accepts a page of the site, which the program translates into an API request (the page itself is never opened). An address on another site is refused.
+**Adresse précise (sites à API)** : pour Unsplash, Pexels et Pixabay, le champ « Adresse précise (facultatif) » accepte une page du site, que le programme traduit en requête d'API (la page elle-même n'est jamais ouverte). Une adresse d'un autre site est refusée.
 
-| Site | Recognised addresses |
+| Site | Adresses reconnues |
 |---|---|
-| Unsplash | `unsplash.com` (random photos) · `/collections/ID/name` · `/@photographer` · `/t/topic` · `/s/photos/keywords` |
-| Pexels | `pexels.com` (editors' picks) · `/search/keywords/` · `/collections/name-ID/` |
-| Pixabay | `pixabay.com` · `/images/search/keywords/` · `/editors_choice/`; options after `?`: `order` (`popular`, `latest`), `category`, `colors`, `editors_choice=true` |
+| Unsplash | `unsplash.com` (photos au hasard) · `/collections/NUMERO/nom` · `/@photographe` · `/t/sujet` · `/s/photos/mots-cles` |
+| Pexels | `pexels.com` (sélection de la rédaction) · `/search/mots-cles/` · `/collections/nom-NUMERO/` |
+| Pixabay | `pixabay.com` · `/images/search/mots-cles/` · `/editors_choice/` ; options après `?` : `order` (`popular`, `latest`), `category`, `colors`, `editors_choice=true` |
 
-The "Recherche" (search) field takes priority over the words in the address, and has no effect for a collection or a photographer. An unrecognised address is reported in the log together with the accepted forms.
+Le champ « Recherche » reste prioritaire sur les mots de l'adresse, et ne sert à rien pour une collection ou un photographe. Une adresse non reconnue est signalée dans le journal avec les formes acceptées.
 
-**Safe mode** ("Filtre" setting): skips images whose keywords contain explicit terms; Pixabay also receives `safesearch`.
-**Preferred width** ("Largeur souhaitée"): when a site offers several formats, the largest one not exceeding this width is taken (3840 by default), to avoid 8K files of several tens of MB.
-**Politeness**: a short pause between requests and the "Max par jour" limit avoid overloading servers.
+**Mode sûr** (réglage « Filtre ») : écarte les images dont les mots-clés contiennent des termes explicites ; Pixabay reçoit aussi `safesearch`.
+**Largeur souhaitée** : quand un site propose plusieurs formats, on prend le plus grand qui ne dépasse pas cette largeur (3840 par défaut), pour éviter les fichiers 8K de plusieurs dizaines de Mo.
+**Politesse** : une courte pause entre deux requêtes et la limite « Max par jour » évitent de surcharger les serveurs.
 
-Respect each site's terms of use. The three APIs are the route these sites intend; for the others, page reading is done at a low rate and under your responsibility. If a site yields nothing: `./wallmanager.sh diagnose "Source name"` shows what the program finds there.
+Respectez les conditions d'utilisation de chaque site. Les trois API sont la voie prévue par ces sites ; pour les autres, la lecture de pages est faite à bas débit et sous votre responsabilité. Si un site ne donne rien : `./wallmanager.sh diagnose "Nom de la source"` montre ce que le programme y trouve.
 
-## Compatibility
+## Compatibilité
 
-- **All desktops, no adaptation**: the wallpaper is changed with `gsettings`, which writes to the desktop's configuration (Cinnamon, MATE and GNOME). It depends on neither X11 nor Wayland.
-- **Dependencies**: Python 3 and its standard modules, plus Pillow (`PIL`) for EXIF and dimensions. To check: `python3 -c "import PIL"`. Without Pillow the program still works, but without EXIF rotation or the dimension filter (a warning is shown).
+- **Tous les bureaux, sans adaptation** : le fond est changé avec `gsettings`, qui écrit dans la configuration du bureau (Cinnamon, MATE et GNOME). Cela ne dépend ni de X11 ni de Wayland.
+- **Dépendances** : Python 3 et ses modules standard, plus Pillow (`PIL`) pour l'EXIF et les dimensions. Pour vérifier : `python3 -c "import PIL"`. Sans Pillow, le programme fonctionne quand même, mais sans redressement EXIF ni filtre de dimensions (un avertissement s'affiche).
 
-## Files
+## Fichiers
 
-- Gallery thumbnails: `~/.local/share/wallmanager/thumbs/` (safe to delete).
-- `wallmanager.py`: the whole engine, commented section by section.
-- `web/`: the settings page (`index.html`, `style.css`, `app.js`).
-- `icons/`: the tray icons (running / stopped).
-- `packaging/build-deb.sh`: builds the `.deb` package.
-- `install.sh`: personal install / uninstall (no administrator rights); `wallmanager.sh`: small launcher that needs no installation.
-- Settings: `~/.config/wallmanager/config.json` — Log: `~/.local/share/wallmanager/wallmanager.log`.
+- Miniatures de la galerie : `~/.local/share/wallmanager/thumbs/` (sans danger à supprimer).
+- `wallmanager.py` : tout le moteur, commenté section par section.
+- `web/` : la page de réglages (`index.html`, `style.css`, `app.js`).
+- `icons/` : les icônes de la zone de notification (en marche / arrêté).
+- `packaging/build-deb.sh` : fabrique le paquet `.deb`.
+- `install.sh` : installation / désinstallation personnelle (sans droits administrateur) ; `wallmanager.sh` : petit lanceur sans installation.
+- Réglages : `~/.config/wallmanager/config.json` — Journal : `~/.local/share/wallmanager/wallmanager.log`.
 
-## Useful commands
+## Commandes utiles
 
 ```bash
-./wallmanager.sh diagnose "https://example.org/page"   # shows what the program understands from an address
-./wallmanager.sh next       # change now
-./wallmanager.sh download   # download now
-./wallmanager.sh status     # show status
-./wallmanager.sh tray       # show the notification-area icon
-./wallmanager.sh menu       # the same menu, as Zenity windows
-./wallmanager.py --dry-run next   # trial run without touching the real wallpaper
+./wallmanager.sh diagnose "https://exemple.org/page"   # montre ce que le programme comprend d'une adresse
+./wallmanager.sh next       # changer tout de suite
+./wallmanager.sh download   # télécharger tout de suite
+./wallmanager.sh status     # voir l'état
+./wallmanager.sh tray       # afficher l'icône de la zone de notification
+./wallmanager.sh menu       # le même menu, en fenêtres Zenity
+./wallmanager.py --dry-run next   # essai sans toucher au vrai fond d'écran
 ```
 
-## Security
+## Sécurité
 
-- The web page listens only on `127.0.0.1` and rejects requests with an unexpected host or origin.
-- The gallery exchanges only image identifiers, never file paths; deletion is refused for any file outside the downloads folder.
-- Addresses must start with `http://` or `https://`.
-- Each downloaded file is checked to be a real image, limited to 30 MB, and named after its content (no name coming from the Internet is used).
+- La page web n'écoute que sur `127.0.0.1` et refuse les requêtes dont l'hôte ou l'origine sont inattendus.
+- La galerie n'échange que des identifiants d'image, jamais de chemin de fichier ; la suppression est refusée pour tout fichier situé hors du dossier des téléchargements.
+- Les adresses doivent commencer par `http://` ou `https://`.
+- Chaque fichier téléchargé est vérifié comme une vraie image, limité à 30 Mo, et nommé d'après son contenu (aucun nom venant d'Internet n'est utilisé).
 
-## Known limitations
+## Limites à connaître
 
-**WebP**: WebP images (downloaded or local) are converted to high-quality JPEG before being displayed, because some desktops cannot use them as a wallpaper.
+**WebP** : les images WebP (téléchargées ou locales) sont converties en JPEG de haute qualité avant d'être affichées, car certains bureaux ne savent pas les utiliser comme fond d'écran.
 
-Link following goes down a single level (thumbnail page → detail page) and does not move on to the next pages of a gallery: enter each gallery page as a separate address. Links to a private (local network) address on another site are not followed. Pages that build their thumbnails with JavaScript cannot be read.
+Le suivi de liens va sur un seul niveau (page de miniatures → page de détail) et ne passe pas aux pages suivantes d'une galerie : indiquez chaque page de la galerie comme une adresse. Les liens vers une adresse privée (réseau local) d'un autre site ne sont pas suivis. Les pages qui construisent leurs miniatures en JavaScript ne sont pas lisibles.
 
-Duplicates are detected from the exact file content: the same photo recompressed or resized counts as a different image. The memory of received images is in `~/.local/share/wallmanager/state.json`; deleting it allows a deleted image to be downloaded again.
+Les doublons sont repérés sur le contenu exact du fichier : la même photo recompressée ou redimensionnée est considérée comme une autre image. La mémoire des images reçues est dans `~/.local/share/wallmanager/state.json` ; la supprimer permet de retélécharger une image effacée.
 
-With no global cap, downloaded images pile up (up to each address's "Max par jour", every day). Tidy up in the gallery or delete files in `~/.local/share/wallmanager/downloads/<source-name>/`.
+Sans plafond global, les images téléchargées s'accumulent (jusqu'au « Max par jour » de chaque adresse, chaque jour). Faites le tri dans la galerie ou supprimez des fichiers dans `~/.local/share/wallmanager/downloads/<nom-de-la-source>/`.
