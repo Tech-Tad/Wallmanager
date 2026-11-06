@@ -40,7 +40,7 @@ Without installing: `./wallmanager.sh` runs the program from this folder and ope
 To install WallManager like any other system software (Linux Mint, Ubuntu, Debian):
 
 ```bash
-sudo apt install ./wallmanager_1.1.6_all.deb     # the "./" is required for a local file
+sudo apt install ./wallmanager_1.2.0_all.deb     # the "./" is required for a local file
 ```
 
 `apt` adds the missing dependencies itself (`python3`, `libglib2.0-bin` for `gsettings`) and, as recommendations, `python3-pil` (EXIF and dimensions) and `xdg-utils`.
@@ -89,6 +89,7 @@ Component used, in order: `XApp.StatusIcon` (Linux Mint), then `AppIndicator` (G
 | Daily maximum | "Max par jour" field of each address (10 by default): this is the only limit, there is no global cap per site. Once reached, downloads resume the next day. |
 | No duplicates | Automatic: an image already received (same content, even from another address or source) is never added twice. An image you deleted by hand is not downloaded again. |
 | Gallery | "Galerie" section of the settings page. **Téléchargées** (downloaded) tab: tick images then "Supprimer la sélection" (deleted from disk, and not downloaded again). **Locales** (local) tab: your photos are never deleted from here; you can only "Exclure de la rotation" (exclude from rotation) and bring them back. Each image has a "Définir en fond" (set as wallpaper) button. Clicking a thumbnail opens it full size. |
+| Ratings (1 to 5 stars) | Stars under each gallery thumbnail (or "Noter la sélection…" for several images; clicking the chosen star again clears the rating). The higher the rating, the more often the image comes back: the weight doubles with each star (1 → ×1, 2 → ×2, 3 → ×4, 4 → ×8, 5 → ×16). An unrated image counts as 3 stars. Active in **random** and **theme** modes as soon as one image is rated; newest / oldest / alphabetical modes follow their order and ignore ratings. With ratings, only very recent images are avoided (instead of showing everything before starting over). A deleted image loses its rating. |
 | Dimension filter | Min and max width/height, orientation. Applies to local **and** downloaded images. |
 | Interval | "Changer toutes les (minutes)" (change every N minutes). |
 | Mode | Newest, oldest, random, alphabetical order, theme. |

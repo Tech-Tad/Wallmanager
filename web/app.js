@@ -285,9 +285,11 @@ const gal = { origin: "downloaded", items: [], total: 0, selected: new Set() };
 
 function galleryTexts() {
   const downloaded = gal.origin === "downloaded";
-  $("gallery-help").textContent = downloaded
+  $("gallery-help").textContent = (downloaded
     ? "Cochez des images puis supprimez-les : elles sont effacées du disque et ne seront pas retéléchargées."
-    : "Ce sont vos propres photos : elles ne sont jamais supprimées d'ici. Vous pouvez seulement les exclure de la rotation.";
+    : "Ce sont vos propres photos : elles ne sont jamais supprimées d'ici. Vous pouvez seulement les exclure de la rotation.")
+    + " Notez les images de 1 à 5 étoiles : plus la note est haute, plus l'image revient souvent"
+    + " (modes Aléatoire et Thème ; sans note = 3 étoiles).";
   $("g-delete").hidden = !downloaded;
   $("g-exclude").hidden = downloaded;
   $("g-include").hidden = downloaded;
@@ -296,9 +298,38 @@ function galleryTexts() {
 function updateGalleryCount() {
   const n = gal.selected.size;
   $("g-count").textContent = gal.items.length + " / " + gal.total + " image(s)" + (n ? " · " + n + " sélectionnée(s)" : "");
-  $("g-delete").disabled = $("g-exclude").disabled = $("g-include").disabled = n === 0;
+  $("g-delete").disabled = $("g-exclude").disabled = $("g-include").disabled = $("g-rate").disabled = n === 0;
   $("g-more").hidden = gal.items.length >= gal.total;
   $("gallery-empty").hidden = gal.total > 0;
+}
+
+// Cinq étoiles cliquables ; un clic sur l'étoile déjà choisie efface la note.
+function makeStars(item) {
+  const box = document.createElement("div");
+  box.className = "stars";
+  box.setAttribute("role", "group");
+  box.setAttribute("aria-label", "Note");
+  const paint = () => box.querySelectorAll("button").forEach((b, i) => {
+    b.classList.toggle("on", i < item.rating);
+    b.setAttribute("aria-pressed", String(i + 1 === item.rating));
+  });
+  for (let n = 1; n <= 5; n++) {
+    const star = document.createElement("button");
+    star.type = "button";
+    star.textContent = "★";
+    star.title = n + " / 5";
+    star.addEventListener("click", async () => {
+      const value = item.rating === n ? 0 : n;
+      try {
+        await api("/api/gallery/rate", "POST", { ids: [item.id], rating: value });
+        item.rating = value;
+        paint();
+      } catch (err) { say("Échec : " + err.message); }
+    });
+    box.append(star);
+  }
+  paint();
+  return box;
 }
 
 // Construit la carte d'une image (miniature, case à cocher, légende, bouton).
@@ -344,6 +375,7 @@ function makeCard(item) {
   });
 
   card.append(link, pick);
+  card.append(makeStars(item));
   if (item.current) card.append(Object.assign(document.createElement("span"), { className: "badge", textContent: "En cours" }));
   if (item.excluded) card.append(Object.assign(document.createElement("span"), { className: "badge off", textContent: "Exclue" }));
   card.append(cap, set);
@@ -363,6 +395,23 @@ async function loadGallery(reset) {
   }
   updateGalleryCount();
 }
+
+// Note groupée : appliquée à toutes les images cochées.
+$("g-rate").addEventListener("change", async () => {
+  const value = $("g-rate").value;
+  $("g-rate").value = "";
+  if (value === "" || gal.selected.size === 0) return;
+  try {
+    const res = await api("/api/gallery/rate", "POST", { ids: [...gal.selected], rating: Number(value) });
+    say(res.changed + " image(s) " + (Number(value) ? "notée(s) " + value + "/5." : "sans note."));
+    gal.items.forEach((it) => { if (gal.selected.has(it.id)) it.rating = Number(value); });
+    const cards = [...document.querySelectorAll("#gallery .thumb")];
+    cards.forEach((c) => {
+      if (!gal.selected.has(c.dataset.id)) return;
+      c.querySelectorAll(".stars button").forEach((b, i) => { b.classList.toggle("on", i < Number(value)); });
+    });
+  } catch (err) { say("Échec : " + err.message); }
+});
 
 document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t === tab));

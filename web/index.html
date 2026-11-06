@@ -43,6 +43,11 @@
         <button id="g-delete" type="button" class="danger">Supprimer la sélection</button>
         <button id="g-exclude" type="button" class="secondary small">Exclure de la rotation</button>
         <button id="g-include" type="button" class="secondary small">Réintégrer</button>
+        <select id="g-rate" class="preset" aria-label="Noter la sélection">
+          <option value="">Noter la sélection…</option>
+          <option value="5">★★★★★ (5)</option><option value="4">★★★★ (4)</option><option value="3">★★★ (3)</option>
+          <option value="2">★★ (2)</option><option value="1">★ (1)</option><option value="0">Effacer la note</option>
+        </select>
         <span id="g-count" class="muted" role="status"></span>
       </div>
       <div id="gallery" class="gallery"></div>

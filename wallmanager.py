@@ -74,7 +74,7 @@ except ImportError:  # pragma: no cover
 # ---------------------------------------------------------------------------
 # 1. CHEMINS ET CONSTANTES
 # ---------------------------------------------------------------------------
-VERSION = "1.1.6"
+VERSION = "1.2.0"
 APP = "wallmanager"
 HOME = Path.home()
 
@@ -132,6 +132,12 @@ DEFAULT_CONFIG = {
     "tray": True,                      # affiche l'icône dans la zone de notification
     "web_port": 8765,
 }
+
+# Notes des images (1 à 5 étoiles). Plus la note est haute, plus l'image a de chances d'être
+# choisie : le « poids » double à chaque étoile (5 étoiles = 16 fois plus de chances que 1).
+# Une image sans note compte comme 3 étoiles (neutre).
+RATING_WEIGHTS = {1: 1, 2: 2, 3: 4, 4: 8, 5: 16}
+DEFAULT_RATING = 3
 
 # Option « simulation » : n'appelle pas gsettings (pratique pour tester).
 DRY_RUN = False
@@ -475,6 +481,19 @@ def choose_next(cfg, pool, state):
         paths = [c["path"] for c in ordered]
         idx = paths.index(current) + 1 if current in paths else 0
         return ordered[idx % len(ordered)]
+
+    # Aléatoire / thème avec des notes : tirage « pondéré » (voir RATING_WEIGHTS). Sans aucune
+    # note dans la sélection, on garde le fonctionnement habituel (tout est vu avant de recommencer).
+    ratings = state.get("ratings", {})
+    if mode in ("random", "theme") and any(c["path"] in ratings for c in pool):
+        history = state.get("history", [])
+        # Les notes jouent sur la FRÉQUENCE : on évite seulement de répéter les images très récentes.
+        k = min(len(pool) - 1, max(1, len(pool) // 4), 50)
+        recent = set(history[-k:] if k > 0 else [])
+        recent.add(current)
+        candidates = [c for c in pool if c["path"] not in recent] or pool
+        weights = [RATING_WEIGHTS.get(ratings.get(c["path"]), RATING_WEIGHTS[DEFAULT_RATING]) for c in candidates]
+        return random.choices(candidates, weights=weights, k=1)[0]
 
     # Pour les autres modes : on évite ce qui a déjà été montré récemment.
     history = state.get("history", [])
@@ -1544,12 +1563,14 @@ def gallery_page(origin, offset, limit):
     items = refresh_gallery_index()
     want_local = origin == "local"
     items = [it for it in items if (it["origin"] == "local") == want_local]
-    current = load_state().get("current_original")
+    state = load_state()
+    current, ratings = state.get("current_original"), state.get("ratings", {})
     out = []
     for it in items[offset:offset + limit]:
         size = image_size(it["path"])
         out.append({"id": it["id"], "name": os.path.basename(it["path"]), "theme": it["theme"],
                     "mtime": it["mtime"], "excluded": it["excluded"],
+                    "rating": ratings.get(it["path"], 0),
                     "size": list(size) if size else None, "current": it["path"] == current})
     return {"total": len(items), "items": out}
 
@@ -1579,7 +1600,7 @@ def gallery_delete(ids):
     On se souvient de leur empreinte pour ne pas les retélécharger.
     Retourne (nombre supprimé, nombre refusé)."""
     root = DOWNLOAD_DIR.resolve()
-    deleted, refused, stems = 0, 0, []
+    deleted, refused, stems, gone = 0, 0, [], []
     for iid in ids:
         it = gallery_item(iid)
         path = Path(it["path"]) if it else None
@@ -1594,14 +1615,36 @@ def gallery_delete(ids):
             refused += 1
             continue
         stems.append(path.stem)
+        gone.append(it["path"])
         deleted += 1
         with GALLERY_LOCK:
             GALLERY_INDEX.pop(iid, None)
     if stems:
-        update_state(lambda st: st.update(
-            seen_hashes=(list(set(st.get("seen_hashes", [])) | set(stems)))[-20000:]))
+        def forget(st):
+            st.update(seen_hashes=(list(set(st.get("seen_hashes", [])) | set(stems)))[-20000:])
+            for g in gone:                       # une image supprimée n'a plus de note
+                st.get("ratings", {}).pop(g, None)
+        update_state(forget)
         log(f"Galerie : {deleted} image(s) supprimée(s).")
     return deleted, refused
+
+
+def gallery_rate(ids, rating):
+    """Note des images de 1 à 5 (0 = effacer la note). Retourne le nombre d'images modifiées."""
+    rating = clamp_int(rating, 0, 5, 0)
+    paths = [it["path"] for it in (gallery_item(i) for i in ids) if it]
+
+    def save(st):
+        ratings = st.setdefault("ratings", {})
+        for path in paths:
+            if rating:
+                ratings[path] = rating
+            else:
+                ratings.pop(path, None)
+    update_state(save)
+    log(f"Galerie : {len(paths)} image(s) notée(s) {rating}/5." if rating
+        else f"Galerie : note effacée pour {len(paths)} image(s).")
+    return len(paths)
 
 
 def gallery_exclude(ids, excluded):
@@ -1772,6 +1815,8 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/gallery/delete":
                 deleted, refused = gallery_delete(ids)
                 return self._send(200, {"deleted": deleted, "refused": refused})
+            if path == "/api/gallery/rate":
+                return self._send(200, {"changed": gallery_rate(ids, body.get("rating", 0))})
             if path == "/api/gallery/exclude":
                 return self._send(200, {"changed": gallery_exclude(ids, bool(body.get("excluded", True)))})
             if path == "/api/gallery/set":

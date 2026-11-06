@@ -40,7 +40,7 @@ Sans installer : `./wallmanager.sh` lance le programme depuis ce dossier et ouvr
 Pour installer WallManager comme n'importe quel logiciel du système (Linux Mint, Ubuntu, Debian) :
 
 ```bash
-sudo apt install ./wallmanager_1.1.6_all.deb     # le « ./ » est nécessaire pour un fichier local
+sudo apt install ./wallmanager_1.2.0_all.deb     # le « ./ » est nécessaire pour un fichier local
 ```
 
 `apt` ajoute lui-même les dépendances manquantes (`python3`, `libglib2.0-bin` pour `gsettings`) et, par recommandation, `python3-pil` (EXIF et dimensions) et `xdg-utils`.
@@ -89,6 +89,7 @@ Composant utilisé, dans l'ordre : `XApp.StatusIcon` (Linux Mint), puis `AppIndi
 | Maximum par jour | Champ « Max par jour » de chaque adresse (10 par défaut) : c'est la seule limite, il n'y a pas de plafond global par site. Au-delà, les téléchargements reprennent le lendemain. |
 | Pas de doublons | Automatique : une image déjà reçue (même contenu, même venue d'une autre adresse ou source) n'est jamais ajoutée deux fois. Une image supprimée à la main n'est pas retéléchargée. |
 | Galerie | Section « Galerie » de la page de réglages. Onglet **Téléchargées** : cochez des images puis « Supprimer la sélection » (effacées du disque, et non retéléchargées ensuite). Onglet **Locales** : vos photos ne sont jamais supprimées d'ici ; on peut seulement les « Exclure de la rotation » (et les réintégrer). Chaque image a un bouton « Définir en fond ». Un clic sur la miniature l'ouvre en grand. |
+| Notes (1 à 5 étoiles) | Étoiles sous chaque miniature de la galerie (ou « Noter la sélection… » pour plusieurs images ; un clic sur l'étoile déjà choisie efface la note). Plus la note est haute, plus l'image revient souvent : le poids double à chaque étoile (1 → ×1, 2 → ×2, 3 → ×4, 4 → ×8, 5 → ×16). Une image sans note compte comme 3 étoiles. Actif dans les modes **Aléatoire** et **Thème** dès qu'une image est notée ; les modes plus récent / plus ancien / alphabétique suivent leur ordre et ignorent les notes. Avec des notes, on évite seulement de répéter les images très récentes (au lieu de tout montrer avant de recommencer). Une image supprimée perd sa note. |
 | Filtre de dimensions | Largeur/hauteur min et max, orientation. S'applique aux images locales **et** téléchargées. |
 | Intervalle | « Changer toutes les (minutes) ». |
 | Mode | Plus récent, plus ancien, aléatoire, ordre alphabétique, thème. |

@@ -159,3 +159,11 @@ details.fold > summary:focus-visible { outline: 2px solid var(--accent); outline
 details.fold[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 14px; }
 details.fold > :not(summary) { margin-left: 16px; margin-right: 16px; }
 details.fold[open] { padding-bottom: 16px; }
+
+/* ----- Notes (étoiles) ----- */
+.stars { display: flex; justify-content: center; gap: 0; padding: 2px 4px 0; }
+.stars button { background: transparent; border: 0; padding: 0 2px; font-size: 1.15rem; line-height: 1.2;
+                color: var(--line); cursor: pointer; }
+.stars button.on { color: #f5a524; }
+.stars button:hover { color: #f5a524; }
+.stars button:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
